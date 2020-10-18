@@ -1,0 +1,6 @@
+[submodule "src/reARMP"]
+	path = src/reARMP
+	url = https://github.com/SutandoTsukai181/reARMP.git
+[submodule "src/gmt_converter"]
+	path = src/gmt_converter
+	url = https://github.com/SutandoTsukai181/gmt_converter.git
