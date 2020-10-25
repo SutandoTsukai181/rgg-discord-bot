@@ -13,17 +13,17 @@ For more details, type \'-h\' at the end of the command.
 }
 
 GMT_CMD = ['i', 'o', 'ig', 'og', 'mtn', 'rst', 'rhct', 'aoff', 'rp', 'fc',
-           'hn', 'bd','sgmd', 'tgmd', 'd', 'dr', 'ns', 'sf', 'cmb', 'z']
+           'hn', 'bd', 'sgmd', 'tgmd', 'd', 'dr', 'ns', 'sf', 'cmb', 'z', 'l']
 
 GMT_COMMAND = ['inpath', 'outpath', 'ingame', 'outgame',  'motion', 'reset',
                'resethact', 'addoffset', 'reparent', 'face', 'hand', 'body',
-               'sourcegmd', 'targetgmd', 'dir', 'recursive', 'nosuffix', 'safe', 'combine', 'zip']
+               'sourcegmd', 'targetgmd', 'dir', 'recursive', 'nosuffix', 'safe', 'combine', 'zip', 'link']
 
 CMD_TO_COMMAND = dict(zip(GMT_CMD, GMT_COMMAND))
 
 COMMAND_TO_CMD = dict(zip(GMT_COMMAND, GMT_CMD))
 
-GMT_HELP = """```
+GMT_HELP_1 = """```
 A tool to convert animations between Yakuza games
 Currently supported Games:
   - Yakuza 0:            y0
@@ -47,17 +47,38 @@ optional arguments:
                         source game
   -og OUTGAME, --outgame OUTGAME
                         target game
+
+  -i INPATH, --inpath INPATH
+                        filename of the main GMT to be used with --resethact
   -mtn, --motion        output GMT will be used in 'motion' folder (for post-Y5)
   -rst, --reset         reset body position to origin point at the start of the animation
+  -rhct, --resethact    reset whole hact scene to position of the input GMT
+                        (requires multiple files (or a zip) and for -i to be the name of the main 
+                        GMT) [overrides --reset]
+  -aoff ADDOFFSET, --addoffset ADDOFFSET
+                        additional height offset for resetting hact scene (for pre-DE hacts)
+                        [will be added to scene height]
+```"""
 
-  -rp, --reparent       reparent bones for this gmt between models
-  -fc, --face           translate face bones for this gmt between models
-  -hn, --hand           translate hand bones for this gmt between models
-  -bd, --body           translate body (without face or hand) bones for this gmt between models
+GMT_HELP_2 = """```
+  -rp, --reparent       reparent bones for this GMT between models
+  -fc, --face           translate face bones for this GMT between models
+  -hn, --hand           translate hand bones for this GMT between models
+  -bd, --body           translate body (without face or hand) bones for this GMT between models
+  -sgmd SOURCEGMD, --sourcegmd SOURCEGMD
+                        name of the source GMD for translation, if uploading a zip
+  -tgmd TARGETGMD, --targetgmd TARGETGMD
+                        name of the target GMD for translation, if uploading a zip
 
+  -d, --dir             multiple file mode
+  -l LINK, --link LINK
+                        URL of input file (only one URL allowed)
+  -z, --zip             compress files in a zip before uploading
   -ns, --nosuffix       do not add suffixes at the end of converted files
   
-  -z,  --zip            compress files in a zip before uploading
+  -cmb, --combine       combine split animations inside a directory
+                        (for auth cutscenes, currently works with Y5 and older games)
+                        [WILL NOT CONVERT]
 
 EXAMPLE
 Convert animations from Yakuza 5 to Yakuza 0
@@ -65,6 +86,8 @@ Convert animations from Yakuza 5 to Yakuza 0
 
     .gmt -ig y5 -og y0 (and attach GMT file from Y5)
 ```"""
+
+DISCORD_LINK = 'cdn.discordapp'
 
 COKE = "https://cdn.discordapp.com/attachments/530840773214863360/760600014027227226/coke.mp4"
 
@@ -77,6 +100,22 @@ NAGOSHIPIC2 = "https://cdn.discordapp.com/attachments/530840773214863360/7673570
 NAGOSHIBASED = "https://cdn.discordapp.com/attachments/530840773214863360/767360251136966657/nagositoshihiro-5.jpg"
 
 NAGOSHISTARE = "https://cdn.discordapp.com/attachments/530840773214863360/767360285790699520/unknown.png"
+
+WORK_EMOTES = {
+    'Y0': '<:Y0:769491151467970590>',
+    'YK1': '<:YK1:769492165079859210>',
+    'YK2': '<:YK2:769492309695266836>',
+    'Y3': '<:Y3:769492778240442388>',
+    'Y4': '<:Y4:769492778170056714>',
+    'Y5': '<:Y5:769492778161274911>',
+    'Y6': '<:Y6:769492778244767764>',
+    'Y7': '<:Y7:769492778182770698>',
+    'YKEN': '<:YKEN:769492777859547148>',
+    'YISH': '<:YISH:769492777821011980>',
+    'YDS': '<:YDS:769492780342706207>',
+    'FOTNS': '<:FOTNS:769492778085253120>',
+    'JE': '<:JE:769493173394210826>'
+}
 
 EMOTES = {
     'MadDogOfDojima': '<:MadDogOfDojima:506552806224822283>',
