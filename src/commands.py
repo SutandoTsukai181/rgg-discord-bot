@@ -268,8 +268,7 @@ class Tools(commands.Cog):
 
                     if len(new_file) > 8_388_119:
                         data = BytesIO()
-                        z = zipfile.ZipFile(
-                            file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
+                        z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
                         z.writestr(zinfo_or_arcname=name, data=new_file)
                         z.close()
                         new_file = BytesIO(data.getvalue())
@@ -496,8 +495,7 @@ class Tools(commands.Cog):
                         data.append(link)
                     else:
                         if ext == 'zip':
-                            z = zipfile.ZipFile(
-                                BytesIO(requests.get(link).content), mode='r')
+                            z = zipfile.ZipFile(BytesIO(requests.get(link).content), mode='r')
                             for n in z.namelist():
                                 n = n.lower()
                                 _, ext2 = split_ext(n)
@@ -540,8 +538,7 @@ class Tools(commands.Cog):
             i = 1
             if zipmode:
                 data = BytesIO()
-                z = zipfile.ZipFile(
-                    file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
+                z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
                 z.writestr(
                     zinfo_or_arcname=files[0].filename, data=files[0].fp.getvalue())
                 sub_files = [(z, data)]
@@ -553,8 +550,7 @@ class Tools(commands.Cog):
                     if size_z + size > 8_388_119:
                         size_z = 0
                         data = BytesIO()
-                        sub_files.append((zipfile.ZipFile(
-                            file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION), data))
+                        sub_files.append((zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION), data))
                     sub_files[-1][0].writestr(zinfo_or_arcname=name,
                                               data=file.fp.getvalue())
                     size_z += size
@@ -576,8 +572,7 @@ class Tools(commands.Cog):
 
                     if size > 8_388_119:
                         data = BytesIO()
-                        z = zipfile.ZipFile(
-                            file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
+                        z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED, compresslevel=zlib.Z_BEST_COMPRESSION)
                         z.writestr(zinfo_or_arcname=name,
                                    data=file.fp.getvalue())
                         z.close()
