@@ -15,8 +15,8 @@ from discord.ext import commands
 
 from help import *
 from utils import *
-from .reARMP import reARMP
-from .gmt_converter.main import convert_from_url_bytes
+from reARMP import reARMP
+from gmt_converter.main import convert_from_url_bytes
 
 MEME_CHANNELS = os.environ.get('DISCORD_MEME_CHANNELS')
 WORK_CHANNELS = os.environ.get('DISCORD_WORK_CHANNELS')
