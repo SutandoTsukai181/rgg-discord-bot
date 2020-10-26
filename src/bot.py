@@ -1,5 +1,6 @@
 import os
 
+from discord import Intents
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -10,7 +11,7 @@ load_dotenv()
 # DISCORD_TOKEN: Bot token (str)
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='.', intents=Intents.all())
 
 
 @bot.event

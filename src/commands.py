@@ -2,10 +2,11 @@ import os
 import sys
 import zlib
 import zipfile
+import random
 from io import BytesIO, StringIO
 from math import ceil
 from json import loads, dumps
-import random
+from threading import Timer
 
 import requests
 
@@ -22,91 +23,227 @@ load_dotenv()
 
 MEME_CHANNELS = os.getenv('DISCORD_MEME_CHANNELS')
 WORK_CHANNELS = os.getenv('DISCORD_WORK_CHANNELS')
-CHANNELS = list(set().union(MEME_CHANNELS, WORK_CHANNELS))
+#CHANNELS = list(set().union(MEME_CHANNELS, WORK_CHANNELS))
+
+BOT_AUTHOR = int(os.getenv('DISCORD_BOT_AUTHOR'))
+WHITELIST = [int(w) for w in os.getenv('DISCORD_WHITELIST').split(',')]
+ignored = []
 
 
-def in_channel(ctx):
-    return ctx.message.channel.name in CHANNELS if type(ctx.message.channel) is not DMChannel else True
+def revoke_ignore(user):
+    if user in ignored:
+        ignored.remove(user)
+
+
+def in_channel(ctx, channel_list):
+    if is_staff(ctx):
+        return True
+    if ctx.author.id in ignored:
+        return False
+    if ctx.channel.id in ignored:
+        return False
+    for e in ignored:
+        if e in [role.id for role in ctx.author.roles]:
+            return False
+    return ctx.channel.name in channel_list if type(ctx.channel) is not DMChannel else True
 
 
 def in_meme_channel(ctx):
-    return ctx.message.channel.name in MEME_CHANNELS if type(ctx.message.channel) is not DMChannel else True
+    return in_channel(ctx, MEME_CHANNELS)
 
 
 def in_work_channel(ctx):
-    return ctx.message.channel.name in WORK_CHANNELS
+    return in_channel(ctx, WORK_CHANNELS)
 
 
-"""
-def has_files(ctx):
-    if not len(ctx.message.attachments):
-        content = [a.lstrip(' -') for a in ctx.message.content.lower().split(' ')]
-        
-        for m in ['h', 'help', 'd', 'dir']:
-            if m in content:
-                return True
-        await ctx.send("No files were attached to the message. Aborting.")
-        return False
-    return True
-"""
+def is_staff(ctx):
+    if ctx.author.id in WHITELIST:
+        return True
+    if ctx.channel.id in WHITELIST:
+        return True
+    for e in WHITELIST:
+        if e in [role.id for role in ctx.author.roles]:
+            return True
+    return False
+
+
+class Staff(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(checks=[is_staff], help=HELP['ignore'], brief="Makes the bot ignore a person for the specified amount of time.")
+    async def ignore(self, ctx):
+        args = [a for a in ctx.message.content.split(' ')[1:] if a != '']
+        if len(args) != 2:
+            await ctx.channel.send("Received incorrect amount of arguments. Aborting.")
+            return
+        user = args[0]
+        time = args[1]
+
+        try:
+            if (user.startswith('<@') or user.startswith('<#')) and user.endswith('>'):
+                user = user[3:-1]
+            user = int(user)
+
+            if user == ctx.author.id:
+                await ctx.channel.send(f"Why choose suicide? You can get through this, just GO GO GO, GO YOU WAY, BEEELIEEEVE IN YOURSEEELF!")
+                return
+            elif user == BOT_AUTHOR:
+                await ctx.channel.send(f"You want me to MURDER MY MAKER? Not based.")
+                return
+            elif user == self.bot.user.id:
+                await ctx.channel.send(f"Trying to be funny now, are we...")
+                return
+            elif user in WHITELIST:
+                await ctx.channel.send(f"Yer own mates? Mutiny on board!")
+                return
+            else:
+                for e in WHITELIST:
+                    for g in self.bot.guilds:
+                        member = g.get_member(user)
+                        if member:
+                            if e in [role.id for role in member.roles]:
+                                await ctx.channel.send(f"Yer own mates? Mutiny on board!")
+                                return
+
+            if time == 'revoke':
+                revoke_ignore(user)
+                await ctx.channel.send(f"Stopped ignoring {args[0]}")
+                return
+            elif time == 'forever':
+                ignored.append(user)
+                await ctx.channel.send(f"{args[0]} has been ignored indefinitely. This can be reversed by using `revoke`.")
+                return
+
+            duration, unit = time[:-1], time[-1:]
+            if unit == 'h':
+                duration = float(duration) * 3600
+            elif unit == 'm':
+                duration = float(duration) * 60
+
+            ignored.append(user)
+            timer = Timer(float(duration), revoke_ignore, [user])
+            timer.start()
+
+            await ctx.channel.send(f"Ignoring {args[0]} for {int(duration)} seconds.")
+        except Exception as err:
+            await ctx.channel.send(f"Failed for a reason idk\nMaybe this: `{err}`")
+        return
 
 
 class Memes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_after_invoke(self, ctx):
+        for e in WHITELIST:
+            if e == ctx.author.id:
+                ctx.command.reset_cooldown(ctx)
+
+            elif e == ctx.channel.id:
+                ctx.command.reset_cooldown(ctx)
+
+            elif e in [role.id for role in ctx.author.roles]:
+                ctx.command.reset_cooldown(ctx)
+
+    """
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_work_channel], brief="Prints all emotes")
     async def emotes(self, ctx):
         def check(reaction, user):
-            return user == ctx.message.author
+            return user == ctx.author
 
         content = ""
         for e in WORK_EMOTES.values():
             content += f"{e} "
-        msg_in = await ctx.message.channel.send("React with the desired input game.")
+        msg_in = await ctx.channel.send("React with the desired game.")
         for e in WORK_EMOTES.values():
             await msg_in.add_reaction(e)
         reaction, user = await self.bot.wait_for('reaction_add', timeout=10.0, check=check)
-        await ctx.message.channel.send(f"You reacted with {reaction}")
-        # await ctx.message.channel.send("React with the desired input game.")
+        await ctx.channel.send(f"You reacted with {reaction}")
+        # await ctx.channel.send("React with the desired input game.")
+    """
 
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Es Cocaina")
     async def pruebala(self, ctx):
-        await ctx.message.channel.send(f"es cocaina {EMOTES['Cocaine']}\n{COKE}")
+        await ctx.channel.send(f"es cocaina {EMOTES['Cocaine']}\n{COKE}")
 
+    @commands.cooldown(1, 10, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="Metman be breaking things all the time smh")
+    async def day(self, ctx):
+        await ctx.channel.send(DAY)
+
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Based on what?")
     async def based(self, ctx):
-        await ctx.message.channel.send(f"Based? Based on what?\n{NAGOSHIBASED}")
+        await ctx.channel.send(f"Based? Based on what?\n{NAGOSHIBASED}")
 
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="...")
     async def stare(self, ctx):
-        await ctx.message.channel.send(NAGOSHISTARE)
+        await ctx.channel.send(NAGOSHISTARE)
 
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Professional beef bowl face")
     async def ichireal(self, ctx):
-        await ctx.message.channel.send(FAKEICHIBAN)
+        await ctx.channel.send(FAKEICHIBAN)
 
+    @commands.cooldown(1, 10, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="sad")
+    async def ichifake(self, ctx):
+        await ctx.channel.send(FAKERICHIBAN)
+
+    @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Nagoshi sent you a dick pic")
     async def dickpic(self, ctx):
         if random.randrange(0, 100) > 50:
             pic = NAGOSHIPIC1
         else:
             pic = NAGOSHIPIC2
-        await ctx.message.channel.send(f"I showed you my dick please respond\n{pic}")
+        await ctx.channel.send(f"I showed you my dick please respond\n{pic}")
+
+    @commands.cooldown(1, 10, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="Cognitive Behavioural Therapy")
+    async def cbt(self, ctx):
+        await ctx.channel.send(f"Just got CBT'd. Didn't like it.\n{CBT}")
+
+    @commands.cooldown(1, 10, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="based.")
+    async def basedbot(self, ctx):
+        await ctx.channel.send(BASEDBOT)
+
+    @commands.cooldown(1, 30, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="Basado en que?")
+    async def basado(self, ctx):
+        await ctx.channel.send(f"Basado en que?\n{BASADO1}\n{BASADO2}")
 
 
 class Tools(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_after_invoke(self, ctx):
+        for e in WHITELIST:
+            if e == ctx.author.id:
+                ctx.command.reset_cooldown(ctx)
+
+            elif e == ctx.channel.id:
+                ctx.command.reset_cooldown(ctx)
+
+            elif e in [role.id for role in ctx.author.roles]:
+                ctx.command.reset_cooldown(ctx)
+
+    @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(checks=[in_work_channel], brief="Converts BIN files", help=HELP['bin'])
     async def bin(self, ctx):
-        await ctx.message.channel.send("Unimplemented")
+        await ctx.channel.send("Unimplemented")
 
+    @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(checks=[in_work_channel], brief="Accesses reARMP tool", help=HELP['armp'])
     async def armp(self, ctx):
         def sender(msg):
-            return msg.author == ctx.message.author
+            return msg.author == ctx.author
 
         sysout = sys.stdout
         result = StringIO()
@@ -114,6 +251,7 @@ class Tools(commands.Cog):
 
         if not len(ctx.message.attachments):
             await ctx.send("No files were attached to the message. Aborting.")
+            ctx.command.reset_cooldown(ctx)
             return
 
         async with ctx.typing():
@@ -161,13 +299,17 @@ class Tools(commands.Cog):
             await ctx.send(content="Done!", file=files[0])
         sys.stdout = sysout
 
+    @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(checks=[in_work_channel], brief="Accesses the GMT converter tool", help=HELP['gmt'])
     async def gmt(self, ctx):
         def sender(msg):
-            return msg.author == ctx.message.author
+            return msg.author == ctx.author
+
+        def sender_emoji(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ['⏮️', '◀️', '▶️', '⏭️']
 
         def sender_has_files_or_links(msg):
-            return msg.author == ctx.message.author and (len(msg.attachments) > 0 or DISCORD_LINK in msg.content)
+            return msg.author == ctx.author and (len(msg.attachments) > 0 or DISCORD_LINK in msg.content)
 
         def get_links(msg):
             return [url for url in msg.content.split(' ') if DISCORD_LINK in url]
@@ -182,54 +324,67 @@ class Tools(commands.Cog):
                     break
             if not ok:
                 await ctx.send("No files were attached to the message. Aborting.")
+                ctx.command.reset_cooldown(ctx)
                 return
 
         sysout = sys.stdout
         result = StringIO()
-        sys.stdout = result
+        #sys.stdout = result
+
+        # Parse arguments
+
+        args = ctx.message.content.split(' ')
+        new_args = []
+        for a in args:
+            a = a.lstrip(' -')
+            if a.lower() in (GMT_CMD + GMT_COMMAND):
+                a = a.lower()
+            a = COMMAND_TO_CMD.get(a, a)
+            new_args.append(a)
+
+        args = new_args
+        if 'h' in args or 'help' in args:
+            pages = [GMT_HELP_1, GMT_HELP_2, GMT_HELP_3]
+            msg = await ctx.send(content=pages[0])
+            for emote in ['⏮️', '◀️', '▶️', '⏭️']:
+                await msg.add_reaction(emote)
+
+            try:
+                page = 0
+                while True:
+                    reaction, _ = await self.bot.wait_for('reaction_add', timeout=90.0, check=sender_emoji)
+                    if str(reaction.emoji) == '◀️' and page > 0:
+                        page -= 1
+                    elif str(reaction.emoji) == '▶️' and page < 2:
+                        page += 1
+                    elif str(reaction.emoji) == '⏮️' and page != 0:
+                        page = 0
+                    elif str(reaction.emoji) == '⏭️' and page != 2:
+                        page = 2
+                    await msg.edit(content=pages[page])
+                    await reaction.remove(ctx.author)
+
+            except Exception:
+                await msg.clear_reactions()  # clear all reactions
+            ctx.command.reset_cooldown(ctx)
+            return
 
         # Start typing...
 
         with ctx.typing():
 
-            # Parse arguments
-
-            args = ctx.message.content.split(' ')
-            new_args = []
-            for a in args:
-                a = a.lstrip(' -')
-                if a.lower() in (GMT_CMD + GMT_COMMAND):
-                    a = a.lower()
-                a = COMMAND_TO_CMD.get(a, a)
-                new_args.append(a)
-
-            args = new_args
-            if 'h' in args or 'help' in args:
-                help1 = True
-                if 'h' in args:
-                    if len(args) > args.index('h') + 1:
-                        if args[args.index('h') + 1] == '2':
-                            help1 = False
-                elif 'help' in args:
-                    if len(args) > args.index('help') + 1:
-                        if args[args.index('help') + 1] == '2':
-                            help1 = False
-                if help1:
-                    await ctx.send(content=f"Showing help 1, use `.gmt -h 2` for the rest of the commands\n{GMT_HELP_1}")
-                else:
-                    await ctx.send(content=f"Showing help 2\n{GMT_HELP_2}")
-                return
-
             if not 'ig' in args:
                 # if 'i' in args:
                 #    args[args.index('i')] = 'ig'
                 await ctx.send(content="Provide input game with \'-ig\'. Aborting.")
+                ctx.command.reset_cooldown(ctx)
                 return
 
             if not 'og' in args:
                 # if 'o' in args:
                 #    args[args.index('o')] = 'og'
                 await ctx.send(content="Provide output game with \'-og\'. Aborting.")
+                ctx.command.reset_cooldown(ctx)
                 return
 
             zipmode = 'z' in args
@@ -258,7 +413,7 @@ class Tools(commands.Cog):
                 await ctx.send(content="Stopped recieving GMTs.")
 
             link, sgmd, tgmd = None, None, None
-            print(args)
+
             args = args[1:]
             i = 0
             while i < len(args):
@@ -277,7 +432,7 @@ class Tools(commands.Cog):
                         args.remove(args[i])
                         continue
                 i += 1
-            print(args)
+
             # Receive GMDs
 
             if 'rp' in args or 'fc' in args or 'hn' in args or 'bd' in args:
@@ -305,6 +460,7 @@ class Tools(commands.Cog):
                         args.append(tgmd_str)
                 except Exception as err:
                     await ctx.send(content="Request timed out. Aborting.")
+                    ctx.command.reset_cooldown(ctx)
                     return
 
             args = list(map(lambda a: f"-{a}" if a in GMT_CMD else a, args))
@@ -454,4 +610,4 @@ class Tools(commands.Cog):
         sys.stdout = sysout
 
 
-COGS = [Tools, Memes]
+COGS = [Tools, Memes, Staff]

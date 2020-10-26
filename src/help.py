@@ -9,6 +9,11 @@ Usage: attach a .bin or .json to the message.
     'gmt': """Converts GMT files between Yakuza games
 Usage: attach the file to the message and enter the required arguments.\n
 For more details, type \'-h\' at the end of the command.
+    """,
+    'ignore': """Ignores a user for the specified amount of time.
+Usage: `.ignore @<User> <time><format>`
+where time can be any valid float number, and format can be either `s` for seconds,
+`m` for minutes, or `h` for hours. To revoke the timer, use `.ignore @<User> revoke`.
     """
 }
 
@@ -41,13 +46,36 @@ Currently supported Games:
 
 Note: All Dragon Engine games are the same, so y6 = yk2 = je
 
-optional arguments:
-  -h, --help            show this help message and exit
+EXAMPLE
+Convert animations from Yakuza 5 to Yakuza 0
+(source file is from Y5, target file will be used in Y0):
+
+    .gmt -ig y5 -og y0 (and attach GMT file from Y5)
+```
+(Page 1/3)"""
+
+GMT_HELP_2 = """```
+Arguments (1/2):
+  -h, --help            show this help message
   -ig INGAME, --ingame INGAME
                         source game
   -og OUTGAME, --outgame OUTGAME
                         target game
 
+  -d, --dir             multiple file mode
+  -l LINK, --link LINK
+                        URL of input file (only one URL allowed)
+  -z, --zip             compress files in a zip before uploading
+  -ns, --nosuffix       do not add suffixes at the end of converted files
+  
+  -cmb, --combine       combine split animations inside a directory
+                        (for auth cutscenes, currently works only with Y5 and older games)
+                        [WILL NOT CONVERT]
+```
+(Page 2/3)"""
+
+GMT_HELP_3 = """```
+Arguments (2/2):
   -i INPATH, --inpath INPATH
                         filename of the main GMT to be used with --resethact
   -mtn, --motion        output GMT will be used in 'motion' folder (for post-Y5)
@@ -58,9 +86,7 @@ optional arguments:
   -aoff ADDOFFSET, --addoffset ADDOFFSET
                         additional height offset for resetting hact scene (for pre-DE hacts)
                         [will be added to scene height]
-```"""
 
-GMT_HELP_2 = """```
   -rp, --reparent       reparent bones for this GMT between models
   -fc, --face           translate face bones for this GMT between models
   -hn, --hand           translate hand bones for this GMT between models
@@ -69,29 +95,16 @@ GMT_HELP_2 = """```
                         name of the source GMD for translation, if uploading a zip
   -tgmd TARGETGMD, --targetgmd TARGETGMD
                         name of the target GMD for translation, if uploading a zip
-
-  -d, --dir             multiple file mode
-  -l LINK, --link LINK
-                        URL of input file (only one URL allowed)
-  -z, --zip             compress files in a zip before uploading
-  -ns, --nosuffix       do not add suffixes at the end of converted files
-  
-  -cmb, --combine       combine split animations inside a directory
-                        (for auth cutscenes, currently works with Y5 and older games)
-                        [WILL NOT CONVERT]
-
-EXAMPLE
-Convert animations from Yakuza 5 to Yakuza 0
-(source file is from Y5, target file will be used in Y0):
-
-    .gmt -ig y5 -og y0 (and attach GMT file from Y5)
-```"""
+```
+(Page 3/3)"""
 
 DISCORD_LINK = 'cdn.discordapp'
 
 COKE = "https://cdn.discordapp.com/attachments/530840773214863360/760600014027227226/coke.mp4"
 
 FAKEICHIBAN = "https://cdn.discordapp.com/attachments/530840773214863360/767357923268493312/unknown.png"
+
+FAKERICHIBAN = "https://cdn.discordapp.com/attachments/766669259949998141/769991149028638730/smug.PNG"
 
 NAGOSHIPIC1 = "https://cdn.discordapp.com/attachments/530840773214863360/767357019522596885/unnamed-3.jpg"
 
@@ -100,6 +113,16 @@ NAGOSHIPIC2 = "https://cdn.discordapp.com/attachments/530840773214863360/7673570
 NAGOSHIBASED = "https://cdn.discordapp.com/attachments/530840773214863360/767360251136966657/nagositoshihiro-5.jpg"
 
 NAGOSHISTARE = "https://cdn.discordapp.com/attachments/530840773214863360/767360285790699520/unknown.png"
+
+CBT = "https://cdn.discordapp.com/attachments/530840773214863360/769985966752268298/1ca30dfeb3b34d76ad220641a3f724f0.jpeg"
+
+BASEDBOT = "https://cdn.discordapp.com/attachments/766669259949998141/769996331736891402/1q9v442.png"
+
+DAY = "https://cdn.discordapp.com/attachments/530840773214863360/760247493698125884/unknown.png"
+
+BASADO1 = "https://cdn.discordapp.com/attachments/766669259949998141/770175971357622312/sombrero.png"
+
+BASADO2 = "https://www.youtube.com/watch?v=q-Rqdgna3Yw"
 
 WORK_EMOTES = {
     'Y0': '<:Y0:769491151467970590>',
