@@ -12,21 +12,18 @@ import requests
 
 from discord import File, utils, DMChannel
 from discord.ext import commands
-from dotenv import load_dotenv
 
 from help import *
 from utils import *
 from reARMP import reARMP
 from gmt_converter.main import convert_from_url_bytes
 
-load_dotenv()
-
-MEME_CHANNELS = os.getenv('DISCORD_MEME_CHANNELS')
-WORK_CHANNELS = os.getenv('DISCORD_WORK_CHANNELS')
+MEME_CHANNELS = os.environ.get('DISCORD_MEME_CHANNELS')
+WORK_CHANNELS = os.environ.get('DISCORD_WORK_CHANNELS')
 #CHANNELS = list(set().union(MEME_CHANNELS, WORK_CHANNELS))
 
-BOT_AUTHOR = int(os.getenv('DISCORD_BOT_AUTHOR'))
-WHITELIST = [int(w) for w in os.getenv('DISCORD_WHITELIST').split(',')]
+BOT_AUTHOR = int(os.environ.get('DISCORD_BOT_AUTHOR'))
+WHITELIST = [int(w) for w in os.environ.get('DISCORD_WHITELIST').split(',')]
 ignored = []
 
 
