@@ -26,7 +26,8 @@ in them, in the specified channel.
 The second command will remove all command messages from that user server-wide. If the second 
 command is used on a channel, it will remove all command *and* bot messages in that channel.
 
-Using `.purge all` will remove all command and bot messages in the server.
+Using `.purge all` will remove all command and bot messages in the server. You can additionally add 
+a number at the end of the command to set the check limit (number of messages to be checked for each channel).
 
 This can be used on users, roles, and channels.
     """

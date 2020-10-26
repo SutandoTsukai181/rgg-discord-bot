@@ -19,6 +19,7 @@ from utils import *
 from reARMP import reARMP
 from gmt_converter.main import convert_from_url_bytes
 
+
 MEME_CHANNELS = os.environ.get('DISCORD_MEME_CHANNELS')
 WORK_CHANNELS = os.environ.get('DISCORD_WORK_CHANNELS')
 #CHANNELS = list(set().union(MEME_CHANNELS, WORK_CHANNELS))
@@ -33,7 +34,7 @@ def revoke_ignore(user, timestamp):
     if ignore in ignored:
         ignored.remove(ignore)
 
-       
+
 def user_to_id(user):
     if user.endswith('>'):
         if user.startswith('<@!') or user.startswith('<&!'):
@@ -53,14 +54,18 @@ def in_channel(ctx, channel_list):
     for e in [u[0] for u in ignored]:
         if e in [role.id for role in ctx.author.roles]:
             return False
-    return ctx.channel.name in channel_list if type(ctx.channel) is not DMChannel else True
+    return ctx.channel.name in channel_list
 
 
 def in_meme_channel(ctx):
+    if type(ctx.channel) is DMChannel:
+        return True
     return in_channel(ctx, MEME_CHANNELS)
 
 
 def in_work_channel(ctx):
+    if type(ctx.channel) is DMChannel:
+        return False
     return in_channel(ctx, WORK_CHANNELS)
 
 
@@ -69,6 +74,8 @@ def is_staff(ctx):
         return True
     if ctx.channel.id in WHITELIST:
         return True
+    if type(ctx.channel) is DMChannel:
+        return False
     for e in WHITELIST:
         if e in [role.id for role in ctx.author.roles]:
             return True
@@ -78,15 +85,17 @@ def is_staff(ctx):
 class Staff(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @commands.command(checks=[is_staff], help=HELP['purge'], brief="Removes bot commands and message history.")
     async def purge(self, ctx):
-        command_names = [f"{self.bot.command_prefix}{c.name} " for c in self.bot.commands]
+        command_names = [
+            f"{self.bot.command_prefix}{c.name}" for c in self.bot.commands]
         user = ''
-        
+        check_limit = 100
+
         def sender(msg):
             return msg.author == ctx.author
-        
+
         def command_in_channel(msg):
             if msg.author == self.bot.user:
                 return True
@@ -94,47 +103,60 @@ class Staff(commands.Cog):
                 if msg.content.startswith(name):
                     return True
             return False
-    
+
         def command_user_in_channel(msg):
+            if msg.author.id == user and msg.author.id == self.bot.user.id:
+                return True
             for name in command_names:
                 if msg.content.startswith(name) and msg.author.id == user:
                     return True
             return False
-        
+
         args = [a for a in ctx.message.content.split(' ')[1:] if a != '']
-        if len(args) != 1 or len(args) != 3:
+        if len(args) < 1 or len(args) > 4:
             await ctx.send("Received incorrect amount of arguments. Aborting.")
             return
         user = args[0]
-        in_channel = args[2] if len(args) == 3 else None
-        
+        in_channel = args[2] if len(args) > 2 else None
+
+        if len(args) in [2, 4]:
+            check_limit = int(args[len(args) - 1])
+
         try:
             if user == 'all':
+                channel_list = ctx.guild.text_channels
                 command_check = command_in_channel
-                channel_list = ctx.guild.channels
             else:
                 user = user_to_id(user)
                 channel_list = [ctx.guild.get_channel(user)]
                 if in_channel:
-                    channel_list = [ctx.guild.get_channel(user_to_id(in_channel))]
+                    channel_list = [ctx.guild.get_channel(
+                        user_to_id(in_channel))]
                     command_check = command_user_in_channel
                 elif channel_list[0]:
                     command_check = command_in_channel
-            
+                else:
+                    channel_list = ctx.guild.text_channels
+                    command_check = command_user_in_channel
+
+            await ctx.send("Are you sure about this? (yes/no)")
             response = await ctx.bot.wait_for('message', check=sender, timeout=30.0)
             if not 'yes' in response.content.split(' '):
                 await ctx.send("Purge cancelled.")
                 return
-            
+
+            deleted_total = 0
             for c in channel_list:
-                deleted = await c.purge(limit=1000, check=command_check)
+                deleted = await c.purge(limit=check_limit, check=command_check)
                 if len(deleted):
                     await ctx.send(f"Purged {len(deleted)} messages in {str(c)}.")
+                deleted_total += len(deleted)
 
-            await ctx.send(f"Finished purging.")
+            if not deleted_total:
+                await ctx.send(f"No messages to purge.")
         except Exception as err:
             await ctx.send(f"Failed for a reason idk\nMaybe this: `{err}`")
-        
+
         return
 
     @commands.command(checks=[is_staff], help=HELP['ignore'], brief="Makes the bot ignore a person for the specified amount of time.")
