@@ -72,27 +72,30 @@ class Staff(commands.Cog):
     async def ignore(self, ctx):
         args = [a for a in ctx.message.content.split(' ')[1:] if a != '']
         if len(args) != 2:
-            await ctx.channel.send("Received incorrect amount of arguments. Aborting.")
+            await ctx.send("Received incorrect amount of arguments. Aborting.")
             return
         user = args[0]
         time = args[1]
 
         try:
-            if (user.startswith('<@') or user.startswith('<#')) and user.endswith('>'):
-                user = user[3:-1]
+            if user.endswith('>'):
+                if user.startswith('<@!') or user.startswith('<&!'):
+                    user = user[3:-1]
+                elif user.startswith('<@') or user.startswith('<&') or user.startswith('<#'):
+                    user = user[2:-1]
             user = int(user)
 
             if user == ctx.author.id:
-                await ctx.channel.send(f"Why choose suicide? You can get through this, just GO GO GO, GO YOU WAY, BEEELIEEEVE IN YOURSEEELF!")
+                await ctx.send(f"Why choose suicide? You can get through this, just GO GO GO, GO YOU WAY, BEEELIEEEVE IN YOURSEEELF!")
                 return
             elif user == BOT_AUTHOR:
-                await ctx.channel.send(f"You want me to MURDER MY MAKER? Not based.")
+                await ctx.send(f"You want me to MURDER MY MAKER? Not based.")
                 return
             elif user == self.bot.user.id:
-                await ctx.channel.send(f"Trying to be funny now, are we...")
+                await ctx.send(f"Trying to be funny now, are we...")
                 return
             elif user in WHITELIST:
-                await ctx.channel.send(f"Yer own mates? Mutiny on board!")
+                await ctx.send(f"Yer own mates? Mutiny on board!")
                 return
             else:
                 for e in WHITELIST:
@@ -100,16 +103,16 @@ class Staff(commands.Cog):
                         member = g.get_member(user)
                         if member:
                             if e in [role.id for role in member.roles]:
-                                await ctx.channel.send(f"Yer own mates? Mutiny on board!")
+                                await ctx.send(f"Yer own mates? Mutiny on board!")
                                 return
 
             if time == 'revoke':
                 revoke_ignore(user)
-                await ctx.channel.send(f"Stopped ignoring {args[0]}")
+                await ctx.send(f"Stopped ignoring {args[0]}")
                 return
             elif time == 'forever':
                 ignored.append(user)
-                await ctx.channel.send(f"{args[0]} has been ignored indefinitely. This can be reversed by using `revoke`.")
+                await ctx.send(f"{args[0]} has been ignored indefinitely. This can be reversed by using `revoke`.")
                 return
 
             duration, unit = time[:-1], time[-1:]
@@ -122,9 +125,9 @@ class Staff(commands.Cog):
             timer = Timer(float(duration), revoke_ignore, [user])
             timer.start()
 
-            await ctx.channel.send(f"Ignoring {args[0]} for {int(duration)} seconds.")
+            await ctx.send(f"Ignoring {args[0]} for {int(duration)} seconds.")
         except Exception as err:
-            await ctx.channel.send(f"Failed for a reason idk\nMaybe this: `{err}`")
+            await ctx.send(f"Failed for a reason idk\nMaybe this: `{err}`")
         return
 
 
@@ -153,43 +156,43 @@ class Memes(commands.Cog):
         content = ""
         for e in WORK_EMOTES.values():
             content += f"{e} "
-        msg_in = await ctx.channel.send("React with the desired game.")
+        msg_in = await ctx.send("React with the desired game.")
         for e in WORK_EMOTES.values():
             await msg_in.add_reaction(e)
         reaction, user = await self.bot.wait_for('reaction_add', timeout=10.0, check=check)
-        await ctx.channel.send(f"You reacted with {reaction}")
-        # await ctx.channel.send("React with the desired input game.")
+        await ctx.send(f"You reacted with {reaction}")
+        # await ctx.send("React with the desired input game.")
     """
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Es Cocaina")
     async def pruebala(self, ctx):
-        await ctx.channel.send(f"es cocaina {EMOTES['Cocaine']}\n{COKE}")
+        await ctx.send(f"es cocaina {EMOTES['Cocaine']}\n{COKE}")
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Metman be breaking things all the time smh")
     async def day(self, ctx):
-        await ctx.channel.send(DAY)
+        await ctx.send(DAY)
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Based on what?")
     async def based(self, ctx):
-        await ctx.channel.send(f"Based? Based on what?\n{NAGOSHIBASED}")
+        await ctx.send(f"Based? Based on what?\n{NAGOSHIBASED}")
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="...")
     async def stare(self, ctx):
-        await ctx.channel.send(NAGOSHISTARE)
+        await ctx.send(NAGOSHISTARE)
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Professional beef bowl face")
     async def ichireal(self, ctx):
-        await ctx.channel.send(FAKEICHIBAN)
+        await ctx.send(FAKEICHIBAN)
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="sad")
     async def ichifake(self, ctx):
-        await ctx.channel.send(FAKERICHIBAN)
+        await ctx.send(FAKERICHIBAN)
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Nagoshi sent you a dick pic")
@@ -198,22 +201,22 @@ class Memes(commands.Cog):
             pic = NAGOSHIPIC1
         else:
             pic = NAGOSHIPIC2
-        await ctx.channel.send(f"I showed you my dick please respond\n{pic}")
+        await ctx.send(f"I showed you my dick please respond\n{pic}")
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Cognitive Behavioural Therapy")
     async def cbt(self, ctx):
-        await ctx.channel.send(f"Just got CBT'd. Didn't like it.\n{CBT}")
+        await ctx.send(f"Just got CBT'd. Didn't like it.\n{CBT}")
 
     @commands.cooldown(1, 10, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="based.")
     async def basedbot(self, ctx):
-        await ctx.channel.send(BASEDBOT)
+        await ctx.send(BASEDBOT)
 
     @commands.cooldown(1, 30, commands.BucketType.channel)
     @commands.command(checks=[in_meme_channel], brief="Basado en que?")
     async def basado(self, ctx):
-        await ctx.channel.send(f"Basado en que?\n{BASADO1}\n{BASADO2}")
+        await ctx.send(f"Basado en que?\n{BASADO1}\n{BASADO2}")
 
 
 class Tools(commands.Cog):
@@ -234,7 +237,7 @@ class Tools(commands.Cog):
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(checks=[in_work_channel], brief="Converts BIN files", help=HELP['bin'])
     async def bin(self, ctx):
-        await ctx.channel.send("Unimplemented")
+        await ctx.send("Unimplemented")
 
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.command(checks=[in_work_channel], brief="Accesses reARMP tool", help=HELP['armp'])
@@ -268,7 +271,8 @@ class Tools(commands.Cog):
 
                     if len(new_file) > 8_388_119:
                         data = BytesIO()
-                        z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED)
+                        z = zipfile.ZipFile(
+                            file=data, mode='w', compression=zipfile.ZIP_DEFLATED)
                         z.writestr(zinfo_or_arcname=name, data=new_file)
                         z.close()
                         new_file = BytesIO(data.getvalue())
@@ -287,6 +291,8 @@ class Tools(commands.Cog):
                     else:
                         await ctx.send(file=File(BytesIO(result.getvalue().encode()), filename='log.txt'))
                 return
+
+            await ctx.send(content="Uploading...")
 
             if check_size(files) > 8_388_119:
                 await ctx.send(content="Your files are too powerful. (heh)")
@@ -325,7 +331,7 @@ class Tools(commands.Cog):
 
         sysout = sys.stdout
         result = StringIO()
-        #sys.stdout = result
+        sys.stdout = result
 
         # Parse arguments
 
@@ -345,6 +351,8 @@ class Tools(commands.Cog):
             for emote in ['⏮️', '◀️', '▶️', '⏭️']:
                 await msg.add_reaction(emote)
 
+            ctx.command.reset_cooldown(ctx)
+
             try:
                 page = 0
                 while True:
@@ -362,7 +370,6 @@ class Tools(commands.Cog):
 
             except Exception:
                 await msg.clear_reactions()  # clear all reactions
-            ctx.command.reset_cooldown(ctx)
             return
 
         # Start typing...
@@ -372,14 +379,19 @@ class Tools(commands.Cog):
             if not 'ig' in args:
                 # if 'i' in args:
                 #    args[args.index('i')] = 'ig'
-                await ctx.send(content="Provide input game with \'-ig\'. Aborting.")
+                await ctx.send(content="Provide input game with `-ig`. Aborting.")
                 ctx.command.reset_cooldown(ctx)
                 return
 
             if not 'og' in args:
                 # if 'o' in args:
                 #    args[args.index('o')] = 'og'
-                await ctx.send(content="Provide output game with \'-og\'. Aborting.")
+                await ctx.send(content="Provide output game with `-og`. Aborting.")
+                ctx.command.reset_cooldown(ctx)
+                return
+
+            if 'rhct' in args and not 'i' in args:
+                await ctx.send(content="Provide main GMT filename with `-i` when using `-rhct`. Aborting.")
                 ctx.command.reset_cooldown(ctx)
                 return
 
@@ -495,7 +507,8 @@ class Tools(commands.Cog):
                         data.append(link)
                     else:
                         if ext == 'zip':
-                            z = zipfile.ZipFile(BytesIO(requests.get(link).content), mode='r')
+                            z = zipfile.ZipFile(
+                                BytesIO(requests.get(link).content), mode='r')
                             for n in z.namelist():
                                 n = n.lower()
                                 _, ext2 = split_ext(n)
@@ -535,10 +548,13 @@ class Tools(commands.Cog):
 
             # Start sending converted files
 
+            await ctx.send(content="Uploading...")
+
             i = 1
             if zipmode:
                 data = BytesIO()
-                z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED)
+                z = zipfile.ZipFile(file=data, mode='w',
+                                    compression=zipfile.ZIP_DEFLATED)
                 z.writestr(
                     zinfo_or_arcname=files[0].filename, data=files[0].fp.getvalue())
                 sub_files = [(z, data)]
@@ -550,7 +566,8 @@ class Tools(commands.Cog):
                     if size_z + size > 8_388_119:
                         size_z = 0
                         data = BytesIO()
-                        sub_files.append((zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED), data))
+                        sub_files.append(
+                            (zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED), data))
                     sub_files[-1][0].writestr(zinfo_or_arcname=name,
                                               data=file.fp.getvalue())
                     size_z += size
@@ -572,7 +589,8 @@ class Tools(commands.Cog):
 
                     if size > 8_388_119:
                         data = BytesIO()
-                        z = zipfile.ZipFile(file=data, mode='w', compression=zipfile.ZIP_DEFLATED)
+                        z = zipfile.ZipFile(
+                            file=data, mode='w', compression=zipfile.ZIP_DEFLATED)
                         z.writestr(zinfo_or_arcname=name,
                                    data=file.fp.getvalue())
                         z.close()
@@ -597,8 +615,6 @@ class Tools(commands.Cog):
 
             await ctx.send(content="Done!")
 
-        #result_string = result.getvalue()
-        # print(result_string)
         sys.stdout = sysout
 
 
