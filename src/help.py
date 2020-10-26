@@ -10,10 +10,25 @@ Usage: attach a .bin or .json to the message.
 Usage: attach the file to the message and enter the required arguments.\n
 For more details, type \'-h\' at the end of the command.
     """,
-    'ignore': """Ignores a user for the specified amount of time.
-Usage: `.ignore @<User> <time><format>`
+    'ignore': """Ignores a user for the specified amount of time.\n
+Usage: `.ignore <@User> <time><format>`\n
 where time can be any valid float number, and format can be either `s` for seconds,
-`m` for minutes, or `h` for hours. To revoke the timer, use `.ignore @<User> revoke`.
+`m` for minutes, or `h` for hours. To revoke the timer, use `.ignore <@User> revoke`.
+Using `.ignore <@User> forever` will not set a timer, but the command can still be revoked.
+
+This can be used on users, roles, and channels.
+    """,
+    'purge': """Purges bot command messages.\n
+Usage: `.purge <@User> in <@channel>` or `.purge <@User>`.\n
+The first command will remove all messages from a specific user with a Nagoomba command 
+in them, in the specified channel.
+
+The second command will remove all command messages from that user server-wide. If the second 
+command is used on a channel, it will remove all command *and* bot messages in that channel.
+
+Using `.purge all` will remove all command and bot messages in the server.
+
+This can be used on users, roles, and channels.
     """
 }
 

@@ -3,6 +3,7 @@ import sys
 import zlib
 import zipfile
 import random
+from time import time as t_now
 from io import BytesIO, StringIO
 from math import ceil
 from json import loads, dumps
@@ -27,19 +28,29 @@ WHITELIST = [int(w) for w in os.environ.get('DISCORD_WHITELIST').split(',')]
 ignored = []
 
 
-def revoke_ignore(user):
-    if user in ignored:
-        ignored.remove(user)
+def revoke_ignore(user, timestamp):
+    ignore = (user, timestamp)
+    if ignore in ignored:
+        ignored.remove(ignore)
+
+       
+def user_to_id(user):
+    if user.endswith('>'):
+        if user.startswith('<@!') or user.startswith('<&!'):
+            user = user[3:-1]
+        elif user.startswith('<@') or user.startswith('<&') or user.startswith('<#'):
+            user = user[2:-1]
+    return int(user)
 
 
 def in_channel(ctx, channel_list):
     if is_staff(ctx):
         return True
-    if ctx.author.id in ignored:
+    if ctx.author.id in [u[0] for u in ignored]:
         return False
-    if ctx.channel.id in ignored:
+    if ctx.channel.id in [u[0] for u in ignored]:
         return False
-    for e in ignored:
+    for e in [u[0] for u in ignored]:
         if e in [role.id for role in ctx.author.roles]:
             return False
     return ctx.channel.name in channel_list if type(ctx.channel) is not DMChannel else True
@@ -67,6 +78,64 @@ def is_staff(ctx):
 class Staff(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    
+    @commands.command(checks=[is_staff], help=HELP['purge'], brief="Removes bot commands and message history.")
+    async def purge(self, ctx):
+        command_names = [f"{self.bot.command_prefix}{c.name} " for c in self.bot.commands]
+        user = ''
+        
+        def sender(msg):
+            return msg.author == ctx.author
+        
+        def command_in_channel(msg):
+            if msg.author == self.bot.user:
+                return True
+            for name in command_names:
+                if msg.content.startswith(name):
+                    return True
+            return False
+    
+        def command_user_in_channel(msg):
+            for name in command_names:
+                if msg.content.startswith(name) and msg.author.id == user:
+                    return True
+            return False
+        
+        args = [a for a in ctx.message.content.split(' ')[1:] if a != '']
+        if len(args) != 1 or len(args) != 3:
+            await ctx.send("Received incorrect amount of arguments. Aborting.")
+            return
+        user = args[0]
+        in_channel = args[2] if len(args) == 3 else None
+        
+        try:
+            if user == 'all':
+                command_check = command_in_channel
+                channel_list = ctx.guild.channels
+            else:
+                user = user_to_id(user)
+                channel_list = [ctx.guild.get_channel(user)]
+                if in_channel:
+                    channel_list = [ctx.guild.get_channel(user_to_id(in_channel))]
+                    command_check = command_user_in_channel
+                elif channel_list[0]:
+                    command_check = command_in_channel
+            
+            response = await ctx.bot.wait_for('message', check=sender, timeout=30.0)
+            if not 'yes' in response.content.split(' '):
+                await ctx.send("Purge cancelled.")
+                return
+            
+            for c in channel_list:
+                deleted = await c.purge(limit=1000, check=command_check)
+                if len(deleted):
+                    await ctx.send(f"Purged {len(deleted)} messages in {str(c)}.")
+
+            await ctx.send(f"Finished purging.")
+        except Exception as err:
+            await ctx.send(f"Failed for a reason idk\nMaybe this: `{err}`")
+        
+        return
 
     @commands.command(checks=[is_staff], help=HELP['ignore'], brief="Makes the bot ignore a person for the specified amount of time.")
     async def ignore(self, ctx):
@@ -78,12 +147,7 @@ class Staff(commands.Cog):
         time = args[1]
 
         try:
-            if user.endswith('>'):
-                if user.startswith('<@!') or user.startswith('<&!'):
-                    user = user[3:-1]
-                elif user.startswith('<@') or user.startswith('<&') or user.startswith('<#'):
-                    user = user[2:-1]
-            user = int(user)
+            user = user_to_id(user)
 
             if user == ctx.author.id:
                 await ctx.send(f"Why choose suicide? You can get through this, just GO GO GO, GO YOU WAY, BEEELIEEEVE IN YOURSEEELF!")
@@ -107,11 +171,12 @@ class Staff(commands.Cog):
                                 return
 
             if time == 'revoke':
-                revoke_ignore(user)
+                for u in [ig for ig in ignored if ig[0] == user]:
+                    ignored.remove(u)
                 await ctx.send(f"Stopped ignoring {args[0]}")
                 return
             elif time == 'forever':
-                ignored.append(user)
+                ignored.append((user, -1))
                 await ctx.send(f"{args[0]} has been ignored indefinitely. This can be reversed by using `revoke`.")
                 return
 
@@ -121,8 +186,9 @@ class Staff(commands.Cog):
             elif unit == 'm':
                 duration = float(duration) * 60
 
-            ignored.append(user)
-            timer = Timer(float(duration), revoke_ignore, [user])
+            now = t_now()
+            ignored.append(user, now)
+            timer = Timer(float(duration), revoke_ignore, [user, now])
             timer.start()
 
             await ctx.send(f"Ignoring {args[0]} for {int(duration)} seconds.")
