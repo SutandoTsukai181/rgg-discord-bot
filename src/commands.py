@@ -371,8 +371,8 @@ class Tools(commands.Cog):
 
             except Exception as err:
                 print(err)
-                await ctx.send(content="Oopsie woopsie. Something went wrong. Post log?")
-                msg = await ctx.bot.wait_for('message', check=sender, timeout=15.0)
+                await ctx.send(content="Oopsie woopsie. Something went wrong. Post log? (y/n)")
+                msg = await ctx.bot.wait_for('message', check=sender, timeout=20.0)
                 if 'y' in msg.content:
                     if len(result.getvalue()) < 500:
                         await ctx.send(content=f"```{result.getvalue()}```")
@@ -621,8 +621,8 @@ class Tools(commands.Cog):
                     files.append(File(BytesIO(new_file), filename=new_name))
             except Exception as err:
                 print(err)
-                await ctx.send(content="Oopsie woopsie. Something went wrong. Post log?")
-                msg = await ctx.bot.wait_for('message', check=sender, timeout=15.0)
+                await ctx.send(content="Oopsie woopsie. Something went wrong. Post log? (y/n)")
+                msg = await ctx.bot.wait_for('message', check=sender, timeout=20.0)
                 if 'y' in msg.content:
                     if len(result.getvalue()) < 500:
                         await ctx.send(content=f"```{result.getvalue()}```")
