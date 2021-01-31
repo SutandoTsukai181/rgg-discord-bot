@@ -45,6 +45,7 @@ CMD_TO_COMMAND = dict(zip(GMT_CMD, GMT_COMMAND))
 COMMAND_TO_CMD = dict(zip(GMT_COMMAND, GMT_CMD))
 
 GMT_HELP_1 = """```
+GMT Converter v0.5.2
 A tool to convert animations between Yakuza games
 Currently supported Games:
   - Yakuza 0:            y0
