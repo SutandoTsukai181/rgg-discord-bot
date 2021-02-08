@@ -306,6 +306,11 @@ class Memes(commands.Cog):
     async def basado(self, ctx):
         await ctx.send(f"Basado en que?\n{BASADO1}\n{BASADO2}")
 
+    @commands.cooldown(1, 30, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="YMC does sound like YMCA tho")
+    async def ymca(self, ctx):
+        await ctx.send(YMCA)
+
 
 class Tools(commands.Cog):
     def __init__(self, bot):

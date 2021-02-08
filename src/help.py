@@ -141,6 +141,8 @@ BASADO1 = "https://cdn.discordapp.com/attachments/766669259949998141/77017597135
 
 BASADO2 = "https://www.youtube.com/watch?v=q-Rqdgna3Yw"
 
+YMCA = "https://www.youtube.com/watch?v=CS9OO0S5w2k"
+
 WORK_EMOTES = {
     'Y0': '<:Y0:769491151467970590>',
     'YK1': '<:YK1:769492165079859210>',
