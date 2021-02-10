@@ -34,18 +34,18 @@ This can be used on users, roles, and channels.
 }
 
 GMT_CMD = ['i', 'o', 'ig', 'og', 'mtn', 'rst', 'rhct', 'aoff', 'rp', 'fc',
-           'hn', 'bd', 'sgmd', 'tgmd', 'd', 'dr', 'ns', 'sf', 'cmb', 'z', 'l']
+           'hn', 'bd', 'sgmd', 'tgmd', 'd', 'dr', 'ns', 'sf', 'cmb', 'sp', 'z', 'l']
 
 GMT_COMMAND = ['inpath', 'outpath', 'ingame', 'outgame',  'motion', 'reset',
                'resethact', 'addoffset', 'reparent', 'face', 'hand', 'body',
-               'sourcegmd', 'targetgmd', 'dir', 'recursive', 'nosuffix', 'safe', 'combine', 'zip', 'link']
+               'sourcegmd', 'targetgmd', 'dir', 'recursive', 'nosuffix', 'safe', 'combine', 'speed', 'zip', 'link']
 
 CMD_TO_COMMAND = dict(zip(GMT_CMD, GMT_COMMAND))
 
 COMMAND_TO_CMD = dict(zip(GMT_COMMAND, GMT_CMD))
 
 GMT_HELP_1 = """```
-GMT Converter v0.5.2
+GMT Converter v0.5.3
 A tool to convert animations between Yakuza games
 Currently supported Games:
   - Yakuza 0:            y0
@@ -88,6 +88,9 @@ Arguments (1/2):
   -cmb, --combine       combine split animations inside a directory
                         (for auth cutscenes, currently works only with Y5 and older games)
                         [WILL NOT CONVERT]
+
+  -sp SPEED, --speed SPEED
+                        factor of the animations speed [2 will double the speed, 1/2 will change it to half the speed]
 ```
 (Page 2/3)"""
 
