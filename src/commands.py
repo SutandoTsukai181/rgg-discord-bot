@@ -311,6 +311,11 @@ class Memes(commands.Cog):
     async def ymca(self, ctx):
         await ctx.send(YMCA)
 
+    @commands.cooldown(1, 30, commands.BucketType.channel)
+    @commands.command(checks=[in_meme_channel], brief="Check github releases kthx")
+    async def releases(self, ctx):
+        await ctx.send(RELEASES)
+
 
 class Tools(commands.Cog):
     def __init__(self, bot):
