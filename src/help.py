@@ -45,23 +45,28 @@ CMD_TO_COMMAND = dict(zip(GMT_CMD, GMT_COMMAND))
 COMMAND_TO_CMD = dict(zip(GMT_COMMAND, GMT_CMD))
 
 GMT_HELP_1 = """```
-GMT Converter v0.5.3
+GMT Converter v0.5.4
+By SutandoTsukai181
+
 A tool to convert animations between Yakuza games
 Currently supported Games:
-  - Yakuza 0:            y0
-  - Yakuza Kiwami:       yk1
-  - Yakuza Kiwami 2:     yk2
-  - Yakuza 3:            y3
-  - Yakuza 4:            y4
-  - Yakuza 5:            y5
-  - Yakuza 6:            y6
-  - Yakuza Kenzan:       yken
-  - Yakuza Ishin:        yish
-  - Yakuza Dead Souls:   yds
-  - FOTNS Lost Paradise: fotns
-  - Judgment:            je
+  - Yakuza 0:             y0
+  - Yakuza Kiwami:        yk1
+  - Yakuza Kiwami 2:      yk2
+  - Yakuza 3:             y3
+  - Yakuza 4:             y4
+  - Yakuza 5:             y5
+  - Yakuza 6:             y6
+  - Yakuza 7:             y7
+  - Yakuza Like A Dragon: ylad (same as y7)
+  - Yakuza Kenzan:        yken
+  - Yakuza Ishin:         yish
+  - Yakuza Dead Souls:    yds
+  - FOTNS Lost Paradise:  fotns
+  - Judgment:             je
 
-Note: All Dragon Engine games are the same, so y6 = yk2 = je
+Note1: Conversion might not properly work for some specific combinations
+Note2: All Dragon Engine games are the same, so y6 = yk2 = je = y7 = ylad
 
 EXAMPLE
 Convert animations from Yakuza 5 to Yakuza 0
@@ -90,7 +95,9 @@ Arguments (1/2):
                         [WILL NOT CONVERT]
 
   -sp SPEED, --speed SPEED
-                        factor of the animations speed [2 will double the speed, 1/2 will change it to half the speed]
+                        factor of the animations speed
+                        must be in the form of x/y where both x and y are integers
+                        [2 will double the speed, 1/2 will change it to half the speed]
 ```
 (Page 2/3)"""
 
