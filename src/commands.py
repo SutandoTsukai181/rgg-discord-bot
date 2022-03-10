@@ -86,7 +86,7 @@ class Staff(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(checks=[is_staff], help=HELP['purge'], brief="Removes bot commands and message history.")
+    @commands.command(checks=[is_staff], help=HELP['purge'], brief="Removes the bot's commands and message history.")
     async def purge(self, ctx):
         command_names = [
             f"{self.bot.command_prefix}{c.name}" for c in self.bot.commands]
@@ -159,7 +159,7 @@ class Staff(commands.Cog):
 
         return
 
-    @commands.command(checks=[is_staff], help=HELP['ignore'], brief="Makes the bot ignore a person for the specified amount of time.")
+    @commands.command(checks=[is_staff], help=HELP['ignore'], brief="Makes the bot ignore a person for a specified amount of time.")
     async def ignore(self, ctx):
         args = [a for a in ctx.message.content.split(' ')[1:] if a != '']
         if len(args) != 2:
@@ -477,19 +477,19 @@ class Tools(commands.Cog):
             if not 'ig' in args:
                 # if 'i' in args:
                 #    args[args.index('i')] = 'ig'
-                await ctx.send(content="Provide input game with `-ig`. Aborting.")
+                await ctx.send(content="Provide an input game with `-ig`. Aborting.")
                 ctx.command.reset_cooldown(ctx)
                 return
 
             if not 'og' in args:
                 # if 'o' in args:
                 #    args[args.index('o')] = 'og'
-                await ctx.send(content="Provide output game with `-og`. Aborting.")
+                await ctx.send(content="Provide an output game with `-og`. Aborting.")
                 ctx.command.reset_cooldown(ctx)
                 return
 
             if 'rhct' in args and not 'i' in args:
-                await ctx.send(content="Provide main GMT filename with `-i` when using `-rhct`. Aborting.")
+                await ctx.send(content="Provide the main GMT filename with `-i` when using `-rhct`. Aborting.")
                 ctx.command.reset_cooldown(ctx)
                 return
 
@@ -516,7 +516,7 @@ class Tools(commands.Cog):
                     except Exception as err:
                         await ctx.send(content="Request timed out.")
                         break
-                await ctx.send(content="Stopped recieving GMTs.")
+                await ctx.send(content="Stopped receiving GMTs.")
 
             link, sgmd, tgmd = None, None, None
 
@@ -544,7 +544,7 @@ class Tools(commands.Cog):
             if 'rp' in args or 'fc' in args or 'hn' in args or 'bd' in args:
                 try:
                     if not sgmd:
-                        await ctx.send(content="Attach **source** GMD.")
+                        await ctx.send(content="Attach the **source** GMD.")
                         msg_s = await ctx.bot.wait_for('message', check=sender_has_files_or_links, timeout=30.0)
                         if len(msg_s.attachments):
                             # sgmd = (msg_s.attachments[0].filename, await msg_s.attachments[0].read())
@@ -555,7 +555,7 @@ class Tools(commands.Cog):
                         args.append(sgmd_str)
 
                     if not tgmd:
-                        await ctx.send(content="Attach **target** GMD.")
+                        await ctx.send(content="Attach the **target** GMD.")
                         msg_t = await ctx.bot.wait_for('message', check=sender_has_files_or_links, timeout=30.0)
                         if len(msg_t.attachments):
                             # tgmd = (msg_t.attachments[0].filename, await msg_t.attachments[0].read())
